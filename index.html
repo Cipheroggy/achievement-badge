@@ -156,7 +156,7 @@
       </p>
 
       <div class="flex items-center justify-between pt-1 border-t border-pink-400/20">
-        <button onclick="fireConfetti()" class="px-2.5 py-1 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full text-[10px] font-medium text-white shadow active:scale-95 transition-all">
+        <button onclick="handleHugClick(event)" class="px-2.5 py-1 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full text-[10px] font-medium text-white shadow active:scale-95 transition-all">
           Hug Me 💕
         </button>
         <span class="text-xs sm:text-sm text-rose-300 cursive font-bold">
@@ -166,20 +166,37 @@
     </div>
   </section>
 
+  <!-- Page 2: Shayari Popup Modal on Hug Me Click -->
+  <div id="hug-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm cursor-pointer" onclick="closeHugModal(event)">
+    <div class="relative w-[85%] max-w-xs p-6 rounded-3xl glass-dock text-center border border-pink-400/40 shadow-2xl flex flex-col items-center cursor-default" onclick="event.stopPropagation()">
+      <span class="text-4xl mb-3 drop-shadow animate-bounce">🌹</span>
+      <p class="text-pink-100 font-medium leading-relaxed cursive text-xl tracking-wide">
+        Main aur Tum agar Hum ho jate<br />
+        Toh such mein teen chaar<br />
+        Bache ek dum ho jate
+      </p>
+    </div>
+  </div>
+
   <script>
     const bgVideo = document.getElementById('bg-video');
     const bg2Img = document.getElementById('bg2-img');
     const romanticSong = document.getElementById('romantic-song');
     const proposalScreen = document.getElementById('proposal-screen');
     const speechScreen = document.getElementById('speech-screen');
+    const hugModal = document.getElementById('hug-modal');
     const noBtn = document.getElementById('no-btn');
     const yesBtn = document.getElementById('yes-btn');
 
     let yesScale = 1;
     let isDetached = false;
     let isUnmuted = false;
+    let pageTransitioned = false;
 
     function instantUnmute() {
+      // Never allow video sound once she has moved to Page 2
+      if (pageTransitioned) return;
+
       if (!isUnmuted && bgVideo) {
         bgVideo.muted = false;
         bgVideo.volume = 1.0;
@@ -192,6 +209,8 @@
     }
 
     function dodgeNoButton() {
+      if (pageTransitioned) return;
+
       if (!isDetached) {
         document.body.appendChild(noBtn);
         isDetached = true;
@@ -218,15 +237,18 @@
       }
     }
 
+    // Touch and mouse dodging listeners
     noBtn.addEventListener('touchstart', (e) => {
       instantUnmute();
       dodgeNoButton();
     }, { passive: true });
 
-    window.addEventListener('touchstart', instantUnmute, { once: true, passive: true });
-    window.addEventListener('click', instantUnmute, { once: true });
+    // Global listeners for first unmute on Page 1
+    window.addEventListener('touchstart', instantUnmute, { passive: true });
+    window.addEventListener('click', instantUnmute);
 
     document.addEventListener('mousemove', (e) => {
+      if (pageTransitioned) return;
       const rect = noBtn.getBoundingClientRect();
       const btnCenterX = rect.left + rect.width / 2;
       const btnCenterY = rect.top + rect.height / 2;
@@ -249,39 +271,66 @@
       dodgeNoButton();
     });
 
-    // YES Click: Instantly kills the video sound and plays only the song
+    // YES Click: Permanently destroys video and its audio listeners
     function handleYesClick(e) {
       if (e) {
         e.stopPropagation();
       }
 
-      // 1. Completely silence, pause, and remove the video
+      // 1. Lock state so video logic is disabled forever
+      pageTransitioned = true;
+
+      // 2. Remove the global listeners so screen taps never trigger video audio
+      window.removeEventListener('touchstart', instantUnmute);
+      window.removeEventListener('click', instantUnmute);
+
+      // 3. Stop, mute, and completely remove the video element from DOM
       if (bgVideo) {
         bgVideo.muted = true;
         bgVideo.volume = 0;
         bgVideo.pause();
-        bgVideo.removeAttribute('src'); // Detaches media pipeline so audio stops instantly
+        bgVideo.src = "";
+        bgVideo.removeAttribute('src');
         bgVideo.load();
-        bgVideo.style.display = 'none';
+        bgVideo.remove();
       }
 
-      // 2. Play only the romantic song
+      // 4. Play only the romantic song
       if (romanticSong) {
         romanticSong.currentTime = 0;
         romanticSong.volume = 1.0;
         romanticSong.play().catch(() => {});
       }
 
-      // 3. Remove Page 1 elements
+      // 5. Hide Page 1 elements
       proposalScreen.classList.add('hidden');
       if (noBtn) noBtn.remove();
 
-      // 4. Show Page 2 artwork and speech bubble
+      // 6. Display Page 2 artwork and speech bubble
       bg2Img.style.display = 'block';
       speechScreen.classList.remove('hidden');
 
-      // 5. Trigger confetti
       fireConfetti();
+    }
+
+    // Opens the shayari modal and triggers confetti
+    function handleHugClick(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+      if (hugModal) {
+        hugModal.classList.remove('hidden');
+      }
+      fireConfetti();
+    }
+
+    function closeHugModal(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+      if (hugModal) {
+        hugModal.classList.add('hidden');
+      }
     }
 
     function fireConfetti() {
