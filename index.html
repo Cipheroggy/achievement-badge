@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Will You Marry Me? ❤️</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      touch-action: manipulation;
+    }
+    .cursive {
+      font-family: 'Dancing Script', cursive;
+    }
+    .glass-card {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    #no-btn {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: all 0.15s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-black text-white h-screen w-screen overflow-hidden select-none m-0 p-0 relative flex items-center justify-center">
+
+  <!-- Background Video: Starts automatically on load (muted so browsers never block it) -->
+  <video id="bg-video" playsinline loop autoplay muted preload="auto" class="fixed inset-0 w-full h-full object-cover -z-20 brightness-[0.8]">
+    <source src="bg-video.mp4" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Ambient Dark Overlay -->
+  <div class="fixed inset-0 bg-black/35 -z-10 pointer-events-none"></div>
+
+  <!-- Page 1: Proposal Screen -->
+  <main id="proposal-screen" class="relative z-10 w-[90%] max-w-md p-8 rounded-3xl glass-card text-center shadow-2xl flex flex-col items-center">
+    <span class="text-5xl mb-3 drop-shadow animate-bounce">💍</span>
+    <h1 class="text-4xl sm:text-5xl font-bold mb-3 text-pink-200 cursive drop-shadow-md">Will you marry me?</h1>
+    <p class="text-xs sm:text-sm text-pink-100/90 mb-8 font-light">I'm really sorry... life is incomplete without you ❤️</p>
+
+    <!-- Buttons Container -->
+    <div class="relative w-full h-16 flex items-center justify-center gap-6" id="btn-container">
+      <button id="yes-btn" onclick="handleYesClick()" class="px-7 py-3 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-bold rounded-full shadow-lg shadow-green-500/40 active:scale-95 transition-all text-lg z-20">
+        YES! 💖
+      </button>
+
+      <!-- The Runaway NO Button -->
+      <button id="no-btn" class="px-7 py-3 bg-gradient-to-r from-rose-600 to-red-600 text-white font-bold rounded-full shadow-lg shadow-red-500/40 cursor-pointer text-lg z-30">
+        NO 🥺
+      </button>
+    </div>
+  </main>
+
+  <!-- Page 2: Success Celebration Screen -->
+  <section id="success-screen" class="hidden relative z-20 w-[92%] max-w-lg p-8 sm:p-10 rounded-3xl glass-card text-center shadow-2xl flex-col items-center max-h-[90vh] overflow-y-auto">
+    <div class="text-6xl mb-4 animate-bounce">🥰</div>
+    <h2 class="text-4xl sm:text-5xl font-bold text-pink-300 cursive mb-4 drop-shadow-lg">I Knew You Loved Me!</h2>
+
+    <div class="text-left bg-black/60 backdrop-blur-sm rounded-2xl p-5 border border-pink-400/30 text-pink-100 text-sm sm:text-base leading-relaxed space-y-3 mb-6">
+      <p class="font-semibold text-rose-300">My Dearest,</p>
+      <p>I know you are upset with me, and I am truly sorry for making you angry. Seeing you silent breaks my heart.</p>
+      <p>Even when you're angry, you mean the entire world to me. I promise to always listen, make you smile, and never take you for granted.</p>
+      <p class="text-right font-bold text-rose-300 cursive text-xl pt-2">— Yours forever ❤️</p>
+    </div>
+
+    <button onclick="fireConfetti()" class="px-6 py-2 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full text-xs uppercase tracking-wider font-semibold shadow hover:scale-105 active:scale-95 transition-all">
+      Send More Love 🎆
+    </button>
+  </section>
+
+  <script>
+    const bgVideo = document.getElementById('bg-video');
+    const proposalScreen = document.getElementById('proposal-screen');
+    const successScreen = document.getElementById('success-screen');
+    const noBtn = document.getElementById('no-btn');
+    const yesBtn = document.getElementById('yes-btn');
+
+    let yesScale = 1;
+    let isDetached = false;
+    let isUnmuted = false;
+
+    // Force unmute with user activation
+    function unmuteAndPlayAudio() {
+      if (!isUnmuted) {
+        bgVideo.muted = false;
+        bgVideo.volume = 1.0;
+        bgVideo.currentTime = 0;
+        const playPromise = bgVideo.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              isUnmuted = true;
+            })
+            .catch(() => {
+              // If browser blocks hover unmute, it unlocks on the very next screen touch
+            });
+        }
+      }
+    }
+
+    // Global listener to ensure audio unlocks on any physical click or touch
+    window.addEventListener('pointerdown', unmuteAndPlayAudio, { once: true });
+    window.addEventListener('touchstart', unmuteAndPlayAudio, { once: true });
+
+    // Dodge logic for the "NO" button
+    function dodgeNoButton(e) {
+      // Unmute audio immediately on attempt
+      unmuteAndPlayAudio();
+
+      if (!isDetached) {
+        document.body.appendChild(noBtn);
+        isDetached = true;
+      }
+
+      const btnW = noBtn.offsetWidth || 95;
+      const btnH = noBtn.offsetHeight || 48;
+      const margin = 24;
+
+      const maxX = Math.max(margin, window.innerWidth - btnW - margin);
+      const maxY = Math.max(margin, window.innerHeight - btnH - margin);
+
+      const randomX = Math.floor(Math.random() * (maxX - margin)) + margin;
+      const randomY = Math.floor(Math.random() * (maxY - margin)) + margin;
+
+      noBtn.style.position = 'fixed';
+      noBtn.style.left = `${randomX}px`;
+      noBtn.style.top = `${randomY}px`;
+      noBtn.style.zIndex = '99999';
+
+      // Enlarge the YES button slightly
+      if (yesScale < 1.45) {
+        yesScale += 0.08;
+        yesBtn.style.transform = `scale(${yesScale})`;
+      }
+    }
+
+    // Laptop: Cursor proximity dodging & mouse click interception
+    document.addEventListener('mousemove', (e) => {
+      const rect = noBtn.getBoundingClientRect();
+      const btnCenterX = rect.left + rect.width / 2;
+      const btnCenterY = rect.top + rect.height / 2;
+      const distance = Math.hypot(e.clientX - btnCenterX, e.clientY - btnCenterY);
+
+      // Dodges before the cursor can even reach the button
+      if (distance < 75) {
+        dodgeNoButton();
+      }
+    });
+
+    noBtn.addEventListener('mouseenter', dodgeNoButton);
+    noBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      dodgeNoButton();
+    });
+
+    // Mobile: Touch evasion
+    noBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault(); // Blocks actual tap registering on NO
+      dodgeNoButton();
+    }, { passive: false });
+
+    // YES Click Handler
+    function handleYesClick() {
+      unmuteAndPlayAudio();
+      proposalScreen.classList.add('hidden');
+      if (noBtn) noBtn.remove();
+      successScreen.classList.remove('hidden');
+      successScreen.classList.add('flex');
+      fireConfetti();
+    }
+
+    // Celebration Confetti
+    function fireConfetti() {
+      confetti({
+        particleCount: 110,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+      setTimeout(() => {
+        confetti({
+          particleCount: 80,
+          angle: 60,
+          spread: 60,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 80,
+          angle: 120,
+          spread: 60,
+          origin: { x: 1 }
+        });
+      }, 250);
+    }
+  </script>
+</body>
+</html>
