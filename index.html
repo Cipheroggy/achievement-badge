@@ -11,47 +11,42 @@
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
     }
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* Exact match to the animation's cream/peach background */
+      background-color: #faeade !important;
       font-family: 'Poppins', sans-serif;
       touch-action: manipulation;
-      background-color: #110e0e;
     }
     .cursive {
       font-family: 'Dancing Script', cursive;
     }
 
-    /* Auto-adapts video to any screen aspect ratio */
-    .responsive-video {
+    /* Force the video to fill the screen on all devices without black bars */
+    #bg-video {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: -20;
+      object-fit: cover !important;
+      object-position: center center;
+      z-index: 1;
       pointer-events: none;
     }
 
-    /* Phones (portrait): Cover full screen cleanly, aligned so the character is framed */
-    @media (orientation: portrait) {
-      .responsive-video {
-        object-fit: cover;
-        object-position: center 35%;
-      }
-    }
-
-    /* Laptops / Desktops (landscape): Contain without stretching */
-    @media (orientation: landscape) {
-      .responsive-video {
-        object-fit: contain;
-        object-position: center center;
-      }
-    }
-
-    .compact-glass {
-      background: rgba(18, 14, 15, 0.72);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.22);
+    /* Clean translucent dock */
+    .glass-dock {
+      background: rgba(20, 16, 17, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     }
 
     #no-btn {
@@ -62,7 +57,7 @@
     }
   </style>
 </head>
-<body class="h-screen w-screen overflow-hidden select-none m-0 p-0 relative flex flex-col justify-end items-center text-white pb-6 sm:pb-8">
+<body class="relative flex flex-col justify-end items-center pb-8 select-none">
 
   <!-- Background Video -->
   <video 
@@ -72,39 +67,35 @@
     loop 
     autoplay 
     muted 
-    preload="auto" 
-    class="responsive-video">
+    preload="auto">
     <source src="bg-video.mp4" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 
-  <!-- Soft gradient overlay so text remains readable across all devices -->
-  <div class="fixed inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30 -z-10 pointer-events-none"></div>
-
-  <!-- Page 1: Proposal Card (Anchored at bottom, scaled for all mobile screen sizes) -->
-  <main id="proposal-screen" class="relative z-10 w-[90%] max-w-[340px] sm:max-w-sm px-5 py-4 rounded-3xl compact-glass text-center shadow-2xl flex flex-col items-center">
+  <!-- Page 1: Proposal Card (Floating neatly at bottom) -->
+  <main id="proposal-screen" class="relative z-20 w-[90%] max-w-[340px] px-5 py-4 rounded-3xl glass-dock text-center flex flex-col items-center">
     <div class="flex items-center justify-center gap-2 mb-1">
       <span class="text-2xl animate-bounce">💍</span>
       <h1 class="text-2xl sm:text-3xl font-bold text-pink-200 cursive drop-shadow">Will you marry me?</h1>
     </div>
-    <p class="text-[11px] sm:text-xs text-pink-100/85 mb-4 font-light tracking-wide">I'm really sorry... gussa chhod do na please ❤️</p>
+    <p class="text-[11px] sm:text-xs text-pink-100/90 mb-4 font-light tracking-wide">I'm really sorry... gussa chhod do na please ❤️</p>
 
     <!-- Buttons Container -->
     <div class="relative w-full h-12 flex items-center justify-center gap-5" id="btn-container">
-      <button id="yes-btn" onclick="handleYesClick()" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-semibold rounded-full shadow-lg shadow-green-500/30 active:scale-95 transition-all text-sm z-20">
+      <button id="yes-btn" onclick="handleYesClick()" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-semibold rounded-full shadow-lg shadow-green-500/30 active:scale-95 transition-all text-sm z-30">
         YES! 💖
       </button>
 
       <!-- The Runaway NO Button -->
-      <button id="no-btn" class="px-5 py-2 bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/30 cursor-pointer text-sm z-30">
+      <button id="no-btn" class="px-5 py-2 bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/30 cursor-pointer text-sm z-40">
         NO 🥺
       </button>
     </div>
   </main>
 
   <!-- Page 2: Success Message Modal -->
-  <section id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/65 backdrop-blur-md">
-    <div class="w-full max-w-sm sm:max-w-md p-6 rounded-3xl compact-glass text-center shadow-2xl flex flex-col items-center max-h-[85vh] overflow-y-auto">
+  <section id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/70 backdrop-blur-md">
+    <div class="w-full max-w-sm sm:max-w-md p-6 rounded-3xl glass-dock text-center shadow-2xl flex flex-col items-center max-h-[85vh] overflow-y-auto">
       <div class="text-4xl mb-2 animate-bounce">🥰</div>
       <h2 class="text-3xl font-bold text-pink-300 cursive mb-3 drop-shadow">I Knew You Loved Me!</h2>
 
@@ -132,7 +123,7 @@
     let isDetached = false;
     let isUnmuted = false;
 
-    // Direct audio activation that satisfies browser gesture token on first tap
+    // Unmute immediately on the first touch/click
     function instantUnmute() {
       if (!isUnmuted && bgVideo) {
         bgVideo.muted = false;
@@ -149,7 +140,6 @@
 
     // Dodge logic for the NO button
     function dodgeNoButton() {
-      // Detach directly to body on first interaction so layout never clips it
       if (!isDetached) {
         document.body.appendChild(noBtn);
         isDetached = true;
@@ -176,17 +166,16 @@
       }
     }
 
-    // MOBILE: Unmutes immediately on finger contact and moves before tap finishes
+    // Mobile: unmute and run on first touch
     noBtn.addEventListener('touchstart', (e) => {
       instantUnmute();
       dodgeNoButton();
     }, { passive: true });
 
-    // Fallback global listener so any initial touch anywhere enables sound
     window.addEventListener('touchstart', instantUnmute, { once: true, passive: true });
     window.addEventListener('click', instantUnmute, { once: true });
 
-    // DESKTOP: Proximity hover dodge & mouse events
+    // Desktop hover
     document.addEventListener('mousemove', (e) => {
       const rect = noBtn.getBoundingClientRect();
       const btnCenterX = rect.left + rect.width / 2;
@@ -210,7 +199,7 @@
       dodgeNoButton();
     });
 
-    // YES Click Handler
+    // YES Click
     function handleYesClick() {
       instantUnmute();
       proposalScreen.classList.add('hidden');
@@ -219,7 +208,7 @@
       fireConfetti();
     }
 
-    // Confetti celebration
+    // Confetti
     function fireConfetti() {
       confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
       setTimeout(() => {
