@@ -6,7 +6,7 @@
   <title>Will You Marry Me? ❤️</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     * {
       box-sizing: border-box;
@@ -18,8 +18,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      /* Exact match to the animation's cream/peach background */
-      background-color: #faeade !important;
+      background-color: #faeade;
       font-family: 'Poppins', sans-serif;
       touch-action: manipulation;
     }
@@ -27,7 +26,7 @@
       font-family: 'Dancing Script', cursive;
     }
 
-    /* Force the video to fill the screen on all devices without black bars */
+    /* Page 1 Video Background */
     #bg-video {
       position: fixed;
       top: 0;
@@ -40,13 +39,46 @@
       pointer-events: none;
     }
 
-    /* Clean translucent dock */
+    /* Page 2 Full Romantic Artwork Background */
+    #bg2-image {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('bg2.png') no-repeat center bottom / cover;
+      z-index: 10;
+      display: none;
+    }
+
+    /* Glass Dock for Page 1 */
     .glass-dock {
       background: rgba(20, 16, 17, 0.78);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.25);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Speech Bubble from Boy to Girl on Page 2 */
+    .boy-speech-bubble {
+      background: rgba(18, 12, 14, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 180, 195, 0.35);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Speech bubble bottom tail pointing toward kneeling boy */
+    .boy-speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -11px;
+      left: 22%;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 12px solid rgba(18, 12, 14, 0.88);
     }
 
     #no-btn {
@@ -59,7 +91,7 @@
 </head>
 <body class="relative flex flex-col justify-end items-center pb-8 select-none">
 
-  <!-- Background Video -->
+  <!-- Background Video (Page 1) -->
   <video 
     id="bg-video" 
     playsinline 
@@ -72,7 +104,18 @@
     Your browser does not support the video tag.
   </video>
 
-  <!-- Page 1: Proposal Card (Floating neatly at bottom) -->
+  <!-- Background Image Container (Page 2) -->
+  <div id="bg2-image">
+    <!-- Subtle gradient on top so text stands out over the red canvas -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/30 pointer-events-none"></div>
+  </div>
+
+  <!-- Romantic Song Audio Element -->
+  <audio id="romantic-song" preload="auto" loop>
+    <source src="song.mp3" type="audio/mp3" />
+  </audio>
+
+  <!-- Page 1: Proposal Card -->
   <main id="proposal-screen" class="relative z-20 w-[90%] max-w-[340px] px-5 py-4 rounded-3xl glass-dock text-center flex flex-col items-center">
     <div class="flex items-center justify-center gap-2 mb-1">
       <span class="text-2xl animate-bounce">💍</span>
@@ -86,36 +129,43 @@
         YES! 💖
       </button>
 
-      <!-- The Runaway NO Button -->
       <button id="no-btn" class="px-5 py-2 bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold rounded-full shadow-lg shadow-red-500/30 cursor-pointer text-sm z-40">
         NO 🥺
       </button>
     </div>
   </main>
 
-  <!-- Page 2: Success Message Modal -->
-  <section id="success-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5 bg-black/70 backdrop-blur-md">
-    <div class="w-full max-w-sm sm:max-w-md p-6 rounded-3xl glass-dock text-center shadow-2xl flex flex-col items-center max-h-[85vh] overflow-y-auto">
-      <div class="text-4xl mb-2 animate-bounce">🥰</div>
-      <h2 class="text-3xl font-bold text-pink-300 cursive mb-3 drop-shadow">I Knew You Loved Me!</h2>
+  <!-- Page 2: Boy Apology Speech Screen -->
+  <section id="speech-screen" class="hidden fixed inset-0 z-30 flex flex-col justify-start items-center pt-8 px-4 sm:px-6">
+    <!-- Floating message dialog positioned on top of the boy -->
+    <div class="relative w-[94%] max-w-sm sm:max-w-md p-5 rounded-3xl boy-speech-bubble text-pink-50 shadow-2xl animate-fade-in">
+      <h2 class="text-xl sm:text-2xl font-bold text-rose-300 mb-2.5">My Dearest,</h2>
+      
+      <p class="text-xs sm:text-sm leading-relaxed mb-3 text-pink-100/95 font-normal">
+        I know you are upset with me, and I am truly sorry for making you angry. Seeing you silent breaks my heart.
+      </p>
+      
+      <p class="text-xs sm:text-sm leading-relaxed mb-4 text-pink-100/95 font-normal">
+        Even when you're angry, you mean the entire world to me. I promise to always listen, make you smile, and never take you for granted.
+      </p>
 
-      <div class="text-left bg-black/50 rounded-2xl p-4 border border-pink-400/20 text-pink-100 text-xs sm:text-sm leading-relaxed space-y-2 mb-4">
-        <p class="font-semibold text-rose-300">My Dearest,</p>
-        <p>I know you are upset with me, and I am truly sorry for making you angry. Seeing you silent breaks my heart.</p>
-        <p>Even when you're angry, you mean the entire world to me. I promise to always listen, make you smile, and never take you for granted.</p>
-        <p class="text-right font-bold text-rose-300 cursive text-base pt-1">— Yours forever ❤️</p>
+      <div class="flex items-center justify-between pt-1 border-t border-pink-400/20">
+        <button onclick="fireConfetti()" class="px-3.5 py-1.5 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full text-[11px] font-medium tracking-wide text-white shadow active:scale-95 transition-all">
+          Hug Me 💕
+        </button>
+        <span class="text-base sm:text-lg text-rose-300 cursive font-bold flex items-center gap-1">
+          — Yours forever <span class="text-sm">❤️</span>
+        </span>
       </div>
-
-      <button onclick="fireConfetti()" class="px-5 py-2 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full text-xs uppercase tracking-wider font-semibold shadow hover:scale-105 active:scale-95 transition-all">
-        Send More Love 🎆
-      </button>
     </div>
   </section>
 
   <script>
     const bgVideo = document.getElementById('bg-video');
+    const bg2Image = document.getElementById('bg2-image');
+    const romanticSong = document.getElementById('romantic-song');
     const proposalScreen = document.getElementById('proposal-screen');
-    const successScreen = document.getElementById('success-screen');
+    const speechScreen = document.getElementById('speech-screen');
     const noBtn = document.getElementById('no-btn');
     const yesBtn = document.getElementById('yes-btn');
 
@@ -123,7 +173,7 @@
     let isDetached = false;
     let isUnmuted = false;
 
-    // Unmute immediately on the first touch/click
+    // Unmute the initial video on the very first touch
     function instantUnmute() {
       if (!isUnmuted && bgVideo) {
         bgVideo.muted = false;
@@ -175,7 +225,7 @@
     window.addEventListener('touchstart', instantUnmute, { once: true, passive: true });
     window.addEventListener('click', instantUnmute, { once: true });
 
-    // Desktop hover
+    // Desktop: hover proximity
     document.addEventListener('mousemove', (e) => {
       const rect = noBtn.getBoundingClientRect();
       const btnCenterX = rect.left + rect.width / 2;
@@ -199,18 +249,36 @@
       dodgeNoButton();
     });
 
-    // YES Click
+    // YES Click: Transition to Page 2
     function handleYesClick() {
-      instantUnmute();
+      // 1. Pause and hide Page 1 video
+      if (bgVideo) {
+        bgVideo.pause();
+        bgVideo.style.display = 'none';
+      }
+
+      // 2. Play the romantic song
+      if (romanticSong) {
+        romanticSong.currentTime = 0;
+        romanticSong.volume = 1.0;
+        romanticSong.play().catch(() => {});
+      }
+
+      // 3. Remove Proposal Elements & NO button
       proposalScreen.classList.add('hidden');
       if (noBtn) noBtn.remove();
-      successScreen.classList.remove('hidden');
+
+      // 4. Reveal Image Background and speech bubble dialog
+      bg2Image.style.display = 'block';
+      speechScreen.classList.remove('hidden');
+
+      // 5. Fire celebratory confetti
       fireConfetti();
     }
 
-    // Confetti
+    // Confetti celebration
     function fireConfetti() {
-      confetti({ particleCount: 110, spread: 80, origin: { y: 0.6 } });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
       setTimeout(() => {
         confetti({ particleCount: 80, angle: 60, spread: 60, origin: { x: 0 } });
         confetti({ particleCount: 80, angle: 120, spread: 60, origin: { x: 1 } });
