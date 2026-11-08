@@ -132,7 +132,7 @@
 
     <!-- Buttons Container -->
     <div class="relative w-full h-12 flex items-center justify-center gap-5" id="btn-container">
-      <button id="yes-btn" onclick="handleYesClick()" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-semibold rounded-full shadow-lg shadow-green-500/30 active:scale-95 transition-all text-sm z-30">
+      <button id="yes-btn" onclick="handleYesClick(event)" class="px-5 py-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-white font-semibold rounded-full shadow-lg shadow-green-500/30 active:scale-95 transition-all text-sm z-30">
         YES! 💖
       </button>
 
@@ -249,25 +249,38 @@
       dodgeNoButton();
     });
 
-    function handleYesClick() {
+    // YES Click: Instantly kills the video sound and plays only the song
+    function handleYesClick(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+
+      // 1. Completely silence, pause, and remove the video
       if (bgVideo) {
+        bgVideo.muted = true;
+        bgVideo.volume = 0;
         bgVideo.pause();
+        bgVideo.removeAttribute('src'); // Detaches media pipeline so audio stops instantly
+        bgVideo.load();
         bgVideo.style.display = 'none';
       }
 
+      // 2. Play only the romantic song
       if (romanticSong) {
         romanticSong.currentTime = 0;
         romanticSong.volume = 1.0;
         romanticSong.play().catch(() => {});
       }
 
+      // 3. Remove Page 1 elements
       proposalScreen.classList.add('hidden');
       if (noBtn) noBtn.remove();
 
-      // Show Page 2 elements
+      // 4. Show Page 2 artwork and speech bubble
       bg2Img.style.display = 'block';
       speechScreen.classList.remove('hidden');
 
+      // 5. Trigger confetti
       fireConfetti();
     }
 
